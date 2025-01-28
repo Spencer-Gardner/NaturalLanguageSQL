@@ -1,6 +1,6 @@
 # University DB
 
-## Descrioption
+## Description
 This simple database models a university's structure, including students, professors, courses, enrollments, and classrooms.
 
 ## Diagram
@@ -21,4 +21,4 @@ LIMIT 1;
 
 ## Conclusion
 I experimented with both zero-shot and single-domain query strategies using GPT-4o Mini. For both strategies, the model successfully answered all questions.
-Though the answers were the same, I found that the responses provided by the single-domain strategy were more helpful and concise.
+Although the answers were the same, I found that the responses from the single-domain strategy were more helpful and concise.
