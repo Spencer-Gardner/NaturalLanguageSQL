@@ -1,0 +1,48 @@
+{
+  "strategy": "single_domain_double_shot",
+  "prompt_prefix": "CREATE TABLE student (\n    student_id INTEGER PRIMARY KEY,\n    name VARCHAR(50) NOT NULL,\n    birth_date DATE,\n    major VARCHAR(50)\n);\n\nCREATE TABLE professor (\n    professor_id INTEGER PRIMARY KEY,\n    name VARCHAR(50) NOT NULL,\n    department VARCHAR(50)\n);\n\nCREATE TABLE course (\n    course_id INTEGER PRIMARY KEY,\n    course_name VARCHAR(100) NOT NULL,\n    department VARCHAR(50),\n    professor_id INTEGER NOT NULL,\n    FOREIGN KEY (professor_id) REFERENCES professor (professor_id)\n);\n\nCREATE TABLE enrollment (\n    student_id INTEGER NOT NULL,\n    course_id INTEGER NOT NULL,\n    grade CHAR(2),\n    PRIMARY KEY (student_id, course_id),\n    FOREIGN KEY (student_id) REFERENCES student (student_id),\n    FOREIGN KEY (course_id) REFERENCES course (course_id)\n);\n\nCREATE TABLE classroom (\n    classroom_id INTEGER PRIMARY KEY,\n    building VARCHAR(50) NOT NULL,\n    room_number VARCHAR(10) NOT NULL\n);\n\nCREATE TABLE course_schedule (\n    course_id INTEGER NOT NULL,\n    classroom_id INTEGER NOT NULL,\n    day_of_week VARCHAR(10) NOT NULL,\n    start_time TIME NOT NULL,\n    end_time TIME NOT NULL,\n    FOREIGN KEY (course_id) REFERENCES course (course_id),\n    FOREIGN KEY (classroom_id) REFERENCES classroom (classroom_id)\n);\nWhat are the names of all students majoring in Computer Science?\nSELECT name\nFROM student\nWHERE major = 'Computer Science';\nProvide an SQLite SELECT statement that answers the following question. Respond only with SQLite syntax. Do not include any explanations, even for errors.",
+  "questionResults": [
+    {
+      "question": "Which courses are taught by Dr. John Miller?",
+      "sql": "\nSELECT course_name\nFROM course\nWHERE professor_id = (SELECT professor_id FROM professor WHERE name = 'Dr. John Miller');\n",
+      "queryRawResponse": "[('Introduction to Programming',), ('Data Structures',)]",
+      "friendlyResponse": "Dr. John Miller teaches the following courses:  \n- Introduction to Programming  \n- Data Structures  ",
+      "error": "None"
+    },
+    {
+      "question": "Which students are enrolled in the 'Introduction to Programming' course?",
+      "sql": "\nSELECT student.name\nFROM student\nJOIN enrollment ON student.student_id = enrollment.student_id\nJOIN course ON enrollment.course_id = course.course_id\nWHERE course.course_name = 'Introduction to Programming';\n",
+      "queryRawResponse": "[('Alice Johnson',), ('Frank Wilson',)]",
+      "friendlyResponse": "Alice Johnson and Frank Wilson are enrolled in the 'Introduction to Programming' course.",
+      "error": "None"
+    },
+    {
+      "question": "Which professors teach more than one course?",
+      "sql": "\nSELECT p.name\nFROM professor p\nJOIN course c ON p.professor_id = c.professor_id\nGROUP BY p.professor_id\nHAVING COUNT(c.course_id) > 1;\n",
+      "queryRawResponse": "[('Dr. John Miller',)]",
+      "friendlyResponse": "Dr. John Miller teaches more than one course.",
+      "error": "None"
+    },
+    {
+      "question": "List all students along with the courses they are enrolled in.",
+      "sql": "\nSELECT s.name AS student_name, c.course_name\nFROM student s\nJOIN enrollment e ON s.student_id = e.student_id\nJOIN course c ON e.course_id = c.course_id;\n",
+      "queryRawResponse": "[('Alice Johnson', 'Introduction to Programming'), ('Alice Johnson', 'Data Structures'), ('Brian Smith', 'Calculus I'), ('Catherine Lee', 'General Physics'), ('David Brown', 'World History'), ('Emma Davis', 'Genetics'), ('Frank Wilson', 'Introduction to Programming'), ('Frank Wilson', 'Calculus I')]",
+      "friendlyResponse": "- **Alice Johnson**: Introduction to Programming, Data Structures  \n- **Brian Smith**: Calculus I  \n- **Catherine Lee**: General Physics  \n- **David Brown**: World History  \n- **Emma Davis**: Genetics  \n- **Frank Wilson**: Introduction to Programming, Calculus I  ",
+      "error": "None"
+    },
+    {
+      "question": "Which students have taken at least two courses and received all A's?",
+      "sql": "\nSELECT s.name\nFROM student s\nJOIN enrollment e ON s.student_id = e.student_id\nWHERE e.grade = 'A'\nGROUP BY s.student_id\nHAVING COUNT(e.course_id) >= 2;\n",
+      "queryRawResponse": "[]",
+      "friendlyResponse": "No students have taken at least two courses and received all A's.",
+      "error": "None"
+    },
+    {
+      "question": "Which classroom is used the most based on scheduled courses?",
+      "sql": "\nSELECT classroom_id\nFROM course_schedule\nGROUP BY classroom_id\nORDER BY COUNT(course_id) DESC\nLIMIT 1;\n",
+      "queryRawResponse": "[(2,)]",
+      "friendlyResponse": "Classroom 2 is used the most based on scheduled courses.",
+      "error": "None"
+    }
+  ]
+}
